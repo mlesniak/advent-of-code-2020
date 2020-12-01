@@ -1,7 +1,7 @@
 package main
 
 func main() {
-	numbers := readNumbers("input-1.txt")
+	numbers := readNumbers("input/input-1.txt")
 
 	for _, n1 := range numbers {
 		for _, n2 := range numbers {
