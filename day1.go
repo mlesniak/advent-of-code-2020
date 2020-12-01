@@ -26,9 +26,11 @@ func main() {
 
 	for _, n1 := range numbers {
 		for _, n2 := range numbers {
-			if n1+n2 == 2020 {
-				println(n1 * n2)
-				return
+			for _, n3 := range numbers {
+				if n1+n2+n3 == 2020 {
+					println(n1 * n2 * n3)
+					return
+				}
 			}
 		}
 	}
