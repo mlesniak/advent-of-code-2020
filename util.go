@@ -25,3 +25,14 @@ func readNumbers(filename string) []int {
 	}
 	return numbers
 }
+
+func readLines(filename string) []string {
+	bs, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	lines := strings.Split(string(bs), "\n")
+
+	return lines
+}

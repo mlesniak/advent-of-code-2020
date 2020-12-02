@@ -1,6 +1,6 @@
 package main
 
-func main() {
+func day1() {
 	numbers := readNumbers("input/input-1.txt")
 
 	for _, n1 := range numbers {
