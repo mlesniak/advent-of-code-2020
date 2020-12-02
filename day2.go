@@ -8,7 +8,7 @@ import (
 type rule struct {
 	min      int
 	max      int
-	char     rune
+	char     byte
 	password string
 }
 
@@ -22,7 +22,7 @@ func day2() {
 
 	valid := 0
 	for _, r := range rules {
-		if !isValidRule(r) {
+		if !isValidComplexRule(r) {
 			fmt.Printf("%v\n", r)
 		} else {
 			valid++
@@ -34,6 +34,21 @@ func day2() {
 func isValidRule(r rule) bool {
 	num := strings.Count(r.password, string(r.char))
 	return num >= r.min && num <= r.max
+}
+
+func isValidComplexRule(r rule) bool {
+	c1 := r.password[r.min-1]
+	c2 := r.password[r.max-1]
+
+	if c1 == r.char && c2 != r.char {
+		return true
+	}
+
+	if c1 != r.char && c2 == r.char {
+		return true
+	}
+
+	return false
 }
 
 func parseRule(line string) rule {
