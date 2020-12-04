@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -14,14 +15,110 @@ func day4() {
 
 	count := 0
 	for _, v := range passports {
-		if isValid(v) {
+		if isValid(v) && isValidComplex(v) {
 			count++
-		} else {
-			fmt.Printf("%v\n", v)
 		}
 	}
 	println(count)
+}
 
+func isValidComplex(p passport) bool {
+	if !checkNumber(p, "byr", 1920, 2002) {
+		return false
+	}
+
+	if !checkNumber(p, "iyr", 2010, 2020) {
+		return false
+	}
+
+	if !checkNumber(p, "eyr", 2020, 2030) {
+		return false
+	}
+
+	// Next time: more regular expression sub-group matching.
+	hgt, ok := p.data["hgt"]
+	if !ok {
+		return false
+	}
+	if strings.HasSuffix(hgt, "cm") {
+		s := hgt[:len(hgt)-2]
+		nbyr, err := strconv.Atoi(s)
+		if err != nil {
+			return false
+		}
+		if !(nbyr >= 150 && nbyr <= 193) {
+			return false
+		}
+	} else if strings.HasSuffix(hgt, "in") {
+		s := hgt[:len(hgt)-2]
+		nbyr, err := strconv.Atoi(s)
+		if err != nil {
+			return false
+		}
+		if !(nbyr >= 59 && nbyr <= 76) {
+			return false
+		}
+	} else {
+		return false
+	}
+
+	if !checkRegex(p, "hcl", `#[a-f0-9]{6}`) {
+		return false
+	}
+
+	if !checkSet(p, "ecl", []string{"amb", "blu", "brn", "gry", "grn", "hzl", "oth"}) {
+		return false
+	}
+
+	if !checkRegex(p, "pid", `^\d{9}$`) {
+		return false
+	}
+
+	return true
+}
+
+func checkSet(p passport, field string, valids []string) bool {
+	byr, ok := p.data[field]
+	if !ok {
+		return false
+	}
+
+	return stringInSlice(byr, valids)
+}
+
+func stringInSlice(s string, slice []string) bool {
+	for _, v := range slice {
+		if s == v {
+			return true
+		}
+	}
+	return false
+}
+
+func checkNumber(p passport, field string, min, max int) bool {
+	byr, ok := p.data[field]
+	if !ok {
+		return false
+	}
+	nbyr, err := strconv.Atoi(byr)
+	if err != nil {
+		return false
+	}
+	if !(nbyr >= min && nbyr <= max) {
+		return false
+	}
+
+	return true
+}
+
+func checkRegex(p passport, field string, rx string) bool {
+	byr, ok := p.data[field]
+	if !ok {
+		return false
+	}
+
+	r := regexp.MustCompile(rx)
+	return r.MatchString(byr)
 }
 
 func isValid(p passport) bool {
@@ -40,6 +137,7 @@ func isValid(p passport) bool {
 func readPassports(filename string) []passport {
 	var passports []passport
 
+	// Next time: simply split whole string by \n\n
 	lines := readLines(filename)
 	var pdata []string
 	for _, line := range lines {
