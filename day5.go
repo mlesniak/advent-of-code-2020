@@ -12,12 +12,22 @@ func day5() {
 	seats := parseSeats(lines)
 
 	maxSeat := 0
+	minSeat := 127*8 + 1
 	for k := range seats {
 		if k > maxSeat {
 			maxSeat = k
 		}
+		if k < minSeat {
+			minSeat = k
+		}
 	}
 	println(maxSeat)
+
+	for i := minSeat; i < maxSeat; i++ {
+		if _, found := seats[i]; !found {
+			println(i)
+		}
+	}
 }
 
 func parseSeats(lines []string) map[seat]struct{} {
