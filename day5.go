@@ -12,16 +12,16 @@ func day5() {
 	seats := parseSeats(lines)
 
 	maxSeat := 0
-	for _, s := range seats {
-		if s > maxSeat {
-			maxSeat = s
+	for k := range seats {
+		if k > maxSeat {
+			maxSeat = k
 		}
 	}
 	println(maxSeat)
 }
 
-func parseSeats(lines []string) []seat {
-	var seats []seat
+func parseSeats(lines []string) map[seat]struct{} {
+	seats := make(map[seat]struct{})
 
 	for _, line := range lines {
 		s1 := strings.ReplaceAll(line, "F", "0")
@@ -39,7 +39,7 @@ func parseSeats(lines []string) []seat {
 		ci, err := strconv.ParseInt(col, 2, 64)
 
 		seatID := ri*8 + ci
-		seats = append(seats, seat(seatID))
+		seats[seat(seatID)] = struct{}{}
 	}
 
 	return seats
