@@ -27,14 +27,27 @@ func readNumbers(filename string) []int {
 }
 
 func readLines(filename string) []string {
+	return strings.Split(readFile(filename), "\n")
+}
+
+func readFile(filename string) string {
 	bs, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}
 
-	lines := strings.Split(string(bs), "\n")
+	return string(bs)
+}
 
-	return lines
+func readGroupedLines(filename string) [][]string {
+	var result [][]string
+
+	groups := strings.Split(readFile(filename), "\n\n")
+	for _, group := range groups {
+		result = append(result, strings.Split(group, "\n"))
+	}
+
+	return result
 }
 
 type Grid struct {
