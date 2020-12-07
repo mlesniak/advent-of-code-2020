@@ -21,7 +21,36 @@ func day7() {
 	bagDefinitions := readLines("input/7.txt")
 	bags := parseBagDefinitions(bagDefinitions)
 
-	// Part1
+	//part1(bags)
+	part2(bags)
+}
+
+func part2(bags map[string]Bag) {
+	target := "shiny gold"
+	count := countBag(bags, bags[target])
+	// You don't need the shiny gold bag to carry itself.
+	count = count - 1
+
+	println(count)
+}
+
+func countBag(bags map[string]Bag, bag Bag) int {
+	count := 0
+
+	fmt.Printf("- %s\n", bag.name)
+	// The bag itself
+	count++
+
+	// Count all children
+	for _, child := range bag.children {
+		fmt.Printf("\t%v\n", child)
+		count = count + child.amount*countBag(bags, bags[child.name])
+	}
+
+	return count
+}
+
+func part1(bags map[string]Bag) {
 	target := "shiny gold"
 	count := 0
 
