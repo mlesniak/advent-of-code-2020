@@ -35,18 +35,31 @@ nextBag:
 			}
 		}
 
-		// Indirect over a child
+		// Indirect over one of the children
 		for _, child := range bag.children {
-			for _, grandchild := range bags[child.name].children {
-				if grandchild.name == target {
-					count++
-					continue nextBag
-				}
+			if reachable(target, bags, bags[child.name].children) {
+				count++
+				continue nextBag
 			}
 		}
 	}
 
 	println(count)
+}
+
+func reachable(target string, bags map[string]Bag, nodes []Bag) bool {
+	for _, node := range nodes {
+		if node.name == target {
+			return true
+		}
+
+		isReachableFor := reachable(target, bags, bags[node.name].children)
+		if isReachableFor {
+			return true
+		}
+	}
+
+	return false
 }
 
 func parseBagDefinitions(lines []string) map[string]Bag {
