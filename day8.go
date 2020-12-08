@@ -11,25 +11,47 @@ type Command struct {
 	Argument int
 }
 
+const (
+	ResultLoop = iota
+	ResultTerminated
+)
+
+type Result int
+
+func (r Result) String() string {
+	switch r {
+	case ResultLoop:
+		return "LOOP"
+	case ResultTerminated:
+		return "FINISHED"
+	default:
+		return "<?>"
+	}
+}
+
 func day8() {
 	lines := readLines("input/8.txt")
 	code := parseCode(lines)
 
-	for _, c := range code {
-		fmt.Println(c)
-	}
+	result, value := executeCode(code)
+	fmt.Printf("%v -> %d\n", result, value)
+}
 
-	seenIPs := make(map[int]struct{})
-
+func executeCode(code []Command) (Result, int) {
 	// We do not know yet if this machine will be used in later
 	// exercises, hence YAGNI.
+	seenIPs := make(map[int]struct{})
 	ip := 0
 	acc := 0
 	for {
 		fmt.Printf("%02d %02d\n", ip, acc)
+
+		if ip >= len(code) {
+			return ResultTerminated, acc
+		}
+
 		if _, seen := seenIPs[ip]; seen {
-			println(acc)
-			break
+			return ResultLoop, acc
 		}
 		seenIPs[ip] = struct{}{}
 
