@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+type Code []Command
+
 type Command struct {
 	Command  string
 	Argument int
@@ -33,11 +35,37 @@ func day8() {
 	lines := readLines("input/8.txt")
 	code := parseCode(lines)
 
-	result, value := executeCode(code)
-	fmt.Printf("%v -> %d\n", result, value)
+	pos := 0
+	for {
+		buffer := make([]Command, len(code))
+		copy(buffer, code)
+
+		// We know the initial code is wrong.
+		// Find next position:
+		for {
+			if buffer[pos].Command == "jmp" {
+				buffer[pos].Command = "nop"
+				pos++
+				break
+			}
+			if buffer[pos].Command == "nop" {
+				buffer[pos].Command = "jmp"
+				pos++
+				break
+			}
+			pos++
+		}
+
+		result, value := executeCode(buffer)
+		fmt.Printf("%v -> %d\n", result, value)
+
+		if result == ResultTerminated {
+			break
+		}
+	}
 }
 
-func executeCode(code []Command) (Result, int) {
+func executeCode(code Code) (Result, int) {
 	// We do not know yet if this machine will be used in later
 	// exercises, hence YAGNI.
 	seenIPs := make(map[int]struct{})
@@ -73,7 +101,7 @@ func readChar() {
 	os.Stdin.Read(b)
 }
 
-func parseCode(lines []string) []Command {
+func parseCode(lines []string) Code {
 	var code []Command
 	for _, line := range lines {
 		if strings.Trim(line, " \t") == "" {
