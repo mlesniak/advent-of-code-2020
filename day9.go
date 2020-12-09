@@ -4,7 +4,7 @@ import "math"
 
 func day9() {
 	numbers := linesToNumbers(readLines("input/9.txt"))
-	preamble := 5
+	preamble := 25
 
 	var targetNumber int
 	// Find first number which is not the sum of the last <preamble> numbers.
@@ -18,7 +18,6 @@ func day9() {
 	}
 
 	// Find continuous set of numbers
-	println(targetNumber)
 	var min, max int
 outerLoop:
 	for i := 0; i < len(numbers); i++ {
