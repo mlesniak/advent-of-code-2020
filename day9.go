@@ -2,11 +2,11 @@ package main
 
 func day9() {
 	numbers := linesToNumbers(readLines("input/9.txt"))
-	preamble := 5
+	preamble := 25
 
 	// Find first number which is not the sum of the last <preamble> numbers.
 	for i := preamble; i < len(numbers); i++ {
-		part := numbers[i-5 : i]
+		part := numbers[i-preamble : i]
 		if !checkXMAS(part, numbers[i]) {
 			println(numbers[i])
 			break
