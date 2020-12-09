@@ -75,3 +75,14 @@ func read2D(filename string) Grid {
 		Data:   grid,
 	}
 }
+
+func linesToNumbers(numbers []string) []int {
+	var res []int
+
+	for _, number := range numbers {
+		i, _ := strconv.Atoi(number)
+		res = append(res, i)
+	}
+
+	return res
+}
