@@ -4,10 +4,95 @@ import "fmt"
 
 func day11() {
 	grid := readGrid("input/11.txt")
+	displayGrid(grid)
+	println("---------------------------")
 
-	for _, row := range grid {
-		fmt.Printf("%v\n", row)
+	numChanges := 1
+	cycles := 0
+	for numChanges > 0 {
+		cycles++
+		grid, numChanges = computeCycle(grid)
+		displayGrid(grid)
+		println("---------------------------")
 	}
+	println(cycles)
+
+	seatCount := 0
+	for _, row := range grid {
+		for _, col := range row {
+			if col == '#' {
+				seatCount++
+			}
+		}
+	}
+	println(seatCount)
+}
+
+func computeCycle(grid [][]byte) ([][]byte, int) {
+	numChanges := 0
+	tmp := make([][]byte, len(grid))
+
+	for y := range grid {
+		tmp[y] = make([]byte, len(grid[y]))
+		for x := range grid[y] {
+			seat := grid[y][x]
+			if seat == '.' {
+				tmp[y][x] = '.'
+				continue
+			}
+
+			occupiedSeats := computeOccupiedNeighbourSeats(grid, y, x)
+			if seat == 'L' && occupiedSeats == 0 {
+				tmp[y][x] = '#'
+				numChanges++
+				continue
+			}
+
+			if seat == '#' && occupiedSeats >= 4 {
+				tmp[y][x] = 'L'
+				numChanges++
+				continue
+			}
+
+			tmp[y][x] = seat
+		}
+	}
+
+	return tmp, numChanges
+}
+
+func computeOccupiedNeighbourSeats(grid [][]byte, y int, x int) int {
+	count := 0
+
+	width := len(grid[0])
+	height := len(grid)
+
+	if y >= 1 && grid[y-1][x] == '#' {
+		count++
+	}
+	if y >= 1 && x <= width-2 && grid[y-1][x+1] == '#' {
+		count++
+	}
+	if x <= width-2 && grid[y][x+1] == '#' {
+		count++
+	}
+	if y <= height-2 && x <= width-2 && grid[y+1][x+1] == '#' {
+		count++
+	}
+	if y <= height-2 && grid[y+1][x] == '#' {
+		count++
+	}
+	if y <= height-2 && x >= 1 && grid[y+1][x-1] == '#' {
+		count++
+	}
+	if x >= 1 && grid[y][x-1] == '#' {
+		count++
+	}
+	if y >= 1 && x >= 1 && grid[y-1][x-1] == '#' {
+		count++
+	}
+
+	return count
 }
 
 func readGrid(filename string) [][]byte {
@@ -19,4 +104,13 @@ func readGrid(filename string) [][]byte {
 	}
 
 	return grid
+}
+
+func displayGrid(grid [][]byte) {
+	for _, row := range grid {
+		for _, col := range row {
+			fmt.Printf("%c", col)
+		}
+		println()
+	}
 }
