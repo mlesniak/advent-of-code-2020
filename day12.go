@@ -6,6 +6,11 @@ import (
 	"strconv"
 )
 
+type point struct {
+	x int
+	y int
+}
+
 type ship struct {
 	direction int
 	x         int
@@ -13,7 +18,7 @@ type ship struct {
 }
 
 func (s ship) String() string {
-	return fmt.Sprintf("x=%v y=%v dir=%v", s.x, s.y, s.direction)
+	return fmt.Sprintf("{x=%v y=%v dir=%v}", s.x, s.y, s.direction)
 }
 
 type instruction struct {
@@ -30,28 +35,39 @@ func day12() {
 		y:         0,
 	}
 
+	waypoint := point{
+		x: 10,
+		y: 1,
+	}
+
 	for _, instr := range instructions {
-		fmt.Printf("\n%v\n", ship)
+		fmt.Printf("\nship=%v waypoint=%v\n", ship, waypoint)
 		fmt.Printf("%v\n", instr)
 		i := parseInstruction(instr)
 		switch i.command {
 		case "N":
-			ship.y += i.argument
+			waypoint.y += i.argument
 		case "S":
-			ship.y -= i.argument
+			waypoint.y -= i.argument
 		case "E":
-			ship.x += i.argument
+			waypoint.x += i.argument
 		case "W":
-			ship.x -= i.argument
+			waypoint.x -= i.argument
 		case "L":
-			ship.direction += i.argument
+			rad := float64(i.argument) * math.Pi / 180.0
+			nx := float64(waypoint.x)*math.Cos(rad) - float64(waypoint.y)*math.Sin(rad)
+			ny := float64(waypoint.y)*math.Cos(rad) + float64(waypoint.x)*math.Sin(rad)
+			waypoint.x = int(math.Round(nx))
+			waypoint.y = int(math.Round(ny))
 		case "R":
-			ship.direction -= i.argument
+			rad := float64(-i.argument) * math.Pi / 180.0
+			nx := float64(waypoint.x)*math.Cos(rad) - float64(waypoint.y)*math.Sin(rad)
+			ny := float64(waypoint.y)*math.Cos(rad) + float64(waypoint.x)*math.Sin(rad)
+			waypoint.x = int(math.Round(nx))
+			waypoint.y = int(math.Round(ny))
 		case "F":
-			dx := int(math.Cos(float64(ship.direction) * math.Pi / 180))
-			dy := int(math.Sin(float64(ship.direction) * math.Pi / 180))
-			ship.x += dx * i.argument
-			ship.y += dy * i.argument
+			ship.x += i.argument * waypoint.x
+			ship.y += i.argument * waypoint.y
 		}
 	}
 
