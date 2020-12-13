@@ -1,6 +1,8 @@
 package main
 
 import (
+	modmath "github.com/deanveloper/modmath/v1/bigmod"
+	"math/big"
 	"strconv"
 	"strings"
 )
@@ -18,25 +20,14 @@ func day13() {
 		busTimes = append(busTimes, bt)
 	}
 
-	for t := 0; ; t++ {
-		found := true
-		for i := 0; i < len(busTimes); i++ {
-			if busTimes[i] == -1 {
-				// ignore, since 'x'
-				continue
-			}
-
-			okTime := t + i
-			if okTime%busTimes[i] != 0 {
-				// Not viable
-				found = false
-				break
-			}
+	var eqs []modmath.CrtEntry
+	for i, t := range busTimes {
+		if t == -1 {
+			continue
 		}
-
-		if found {
-			println(t)
-			break
-		}
+		eqs = append(eqs, modmath.CrtEntry{A: big.NewInt(int64(-i)), N: big.NewInt(int64(t))})
 	}
+
+	solution := modmath.SolveCrtMany(eqs)
+	println(solution.Int64())
 }
