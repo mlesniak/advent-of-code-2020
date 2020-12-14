@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -30,19 +31,24 @@ func day14() {
 			v, _ := strconv.Atoi(m2[2])
 			val := int64(v)
 
-			// Convert value.
-			fmt.Printf("\nfrom value %v\n", val)
-			for i := len(mask) - 1; i >= 0; i-- {
-				if mask[i] == '1' {
-					val = setBit(val, int64(len(mask)-i-1))
-				} else if mask[i] == '0' {
-					val = clearBit(val, int64(len(mask)-i-1))
-				}
-			}
-			fmt.Printf("masked value %v\n", val)
+			b2dst := fmt.Sprintf("%036s", strconv.FormatInt(int64(dst), 2))
+			target := combineMask(mask, b2dst)
+			setMemoryValue(memory, 0, target, val)
+			println(target)
 
-			memory[dst] = int64(val)
-			fmt.Printf("%v <- %v\n", dst, val)
+			// Convert value.
+			//fmt.Printf("\nfrom value %v\n", val)
+			//for i := len(mask) - 1; i >= 0; i-- {
+			//	if mask[i] == '1' {
+			//		val = setBit(val, int64(len(mask)-i-1))
+			//	} else if mask[i] == '0' {
+			//		val = clearBit(val, int64(len(mask)-i-1))
+			//	}
+			//}
+			//fmt.Printf("masked value %v\n", val)
+			//
+			//memory[dst] = int64(val)
+			//fmt.Printf("%v <- %v\n", dst, val)
 			continue
 		}
 
@@ -56,6 +62,44 @@ func day14() {
 		fmt.Printf("Summing up %d -> %d\n", v, sum)
 	}
 	fmt.Printf("Result: %d\n", sum)
+}
+
+func setMemoryValue(memory map[int]int64, i int, target string, val int64) {
+	if i == 36 {
+		// All permutations done. Set value.
+		addr, _ := strconv.ParseInt(target, 2, 64)
+		fmt.Printf("Setting %s <- %d\n", target, val)
+		memory[int(addr)] = val
+		return
+	}
+
+	c := target[i]
+	if c == '0' || c == '1' {
+		setMemoryValue(memory, i+1, target, val)
+	} else if c == 'X' {
+		t := target[:i] + "1" + target[i+1:]
+		setMemoryValue(memory, i+1, t, val)
+		t = target[:i] + "0" + target[i+1:]
+		setMemoryValue(memory, i+1, t, val)
+	}
+}
+
+func combineMask(mask string, dst string) string {
+	var sb strings.Builder
+
+	for i := 0; i < len(mask); i++ {
+		if mask[i] == '0' {
+			sb.WriteString(string(dst[i]))
+		}
+		if mask[i] == '1' {
+			sb.WriteString("1")
+		}
+		if mask[i] == 'X' {
+			sb.WriteString("X")
+		}
+	}
+
+	return sb.String()
 }
 
 func setBit(n int64, pos int64) int64 {
