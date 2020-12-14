@@ -68,7 +68,7 @@ func setMemoryValue(memory map[int]int64, i int, target string, val int64) {
 	if i == 36 {
 		// All permutations done. Set value.
 		addr, _ := strconv.ParseInt(target, 2, 64)
-		fmt.Printf("Setting %s <- %d\n", target, val)
+		//fmt.Printf("Setting %s <- %d\n", target, val)
 		memory[int(addr)] = val
 		return
 	}
