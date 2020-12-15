@@ -10,40 +10,45 @@ func day15() {
 	lines := readLines("input/15.txt")
 	nums := strings.Split(lines[0], ",")
 
+	var lastNumberSpoken int
+	lastSeen := make(map[int]int)
 	var numbers []int
-	for _, num := range nums {
+	for i, num := range nums {
 		n, _ := strconv.Atoi(num)
-		numbers = append(numbers, n)
+		lastNumberSpoken = n
+		if i != len(numbers)-1 {
+			numbers = append(numbers, n)
+			lastSeen[n] = i + 1
+		}
 	}
 
-	turn := len(numbers) + 1
+	turn := len(nums) + 1
 	for {
-		fmt.Printf("\nturn=%d\n", turn)
-		lastNumberSpoken := numbers[len(numbers)-1]
-		fmt.Printf("lastNumberSpoken=%d\n", lastNumberSpoken)
+		//fmt.Printf("\nturn=%d\n", turn)
+		//fmt.Printf("lastNumberSpoken=%d\n", lastNumberSpoken)
+		//fmt.Printf("memory=%v\n", lastSeen)
 
 		// Check if spoken before:
 		spokenBeforeAt := -1
-		for i := len(numbers) - 2; i >= 0; i-- {
-			if numbers[i] == lastNumberSpoken {
-				spokenBeforeAt = i
-				break
-			}
+		spokenBeforeAt, found := lastSeen[lastNumberSpoken]
+		if !found || turn == len(numbers)+1 {
+			spokenBeforeAt = -1
 		}
-		fmt.Printf("spokenBeforeAt=%d\n", spokenBeforeAt)
+		//fmt.Printf("spokenBeforeAt=%d\n", spokenBeforeAt)
+		lastSeen[lastNumberSpoken] = turn - 1
 
 		if spokenBeforeAt == -1 {
-			fmt.Printf("Never seen -> Adding 0\n")
-			numbers = append(numbers, 0)
+			//fmt.Printf("Never seen -> Adding 0\n")
+			lastNumberSpoken = 0
 		} else {
-			x := turn - 1 - spokenBeforeAt - 1
-			fmt.Printf("Seen before-> Adding %d\n", x)
-			numbers = append(numbers, x)
+			x := turn - 1 - spokenBeforeAt
+			//fmt.Printf("Seen before-> Adding %d\n", x)
+			lastNumberSpoken = x
 		}
 
 		turn++
-		if turn > 2020 {
-			fmt.Printf("\n\n-> %d\n", numbers[len(numbers)-1])
+		if turn > 30000000 {
+			fmt.Printf("\n\n-> %d\n", lastNumberSpoken)
 			break
 		}
 	}
