@@ -17,14 +17,44 @@ type ticket struct {
 }
 
 func day16() {
-	rules, myTicket, otherTicket := readTickets("input/16.txt")
-	fmt.Printf("%v\n", rules)
-	fmt.Printf("%v\n", myTicket)
-	fmt.Printf("%v\n", otherTicket)
+	rules, _, otherTickets := readTickets("input/16.txt")
+	//fmt.Printf("%v\n", rules)
+	//fmt.Printf("%v\n", myTicket)
+	//fmt.Printf("%v\n", otherTickets)
 
-	validTickets := computeValidTickets(otherTicket, rules)
+	validTickets := computeValidTickets(otherTickets, rules)
 
-	fmt.Printf("%v\n", validTickets)
+	// For each ticketRule and position, check if possible at all.
+	possRules := make(map[string]map[int]bool)
+	for _, rule := range rules {
+		possRules[rule[0].name] = make(map[int]bool)
+	nextPosition:
+		for pos := 0; pos < len(validTickets[0].numbers); pos++ {
+			for _, ot := range validTickets {
+				valPos := ot.numbers[pos]
+				if !validTicketRule(valPos, rule) {
+					continue nextPosition
+				}
+			}
+
+			possRules[rule[0].name][pos] = true
+		}
+
+	}
+
+	fmt.Printf("%v\n", possRules)
+}
+
+func validTicketRule(val int, rules []ticketRule) bool {
+	foundValidRule := false
+	for _, rule := range rules {
+		if val >= rule.min && val <= rule.max {
+			foundValidRule = true
+			break
+		}
+	}
+
+	return foundValidRule
 }
 
 func computeValidTickets(otherTicket []ticket, rules map[string][]ticketRule) []ticket {
