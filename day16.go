@@ -21,6 +21,31 @@ func day16() {
 	fmt.Printf("%v\n", rules)
 	fmt.Printf("%v\n", ticket)
 	fmt.Printf("%v\n", otherTicket)
+
+	sum := 0
+	for _, t := range otherTicket {
+		for _, tv := range t.numbers {
+			validNumber := false
+
+			// Check if this value is in any rule
+		ruleCheck:
+			for _, ticketRules := range rules {
+				for _, r := range ticketRules {
+					if tv <= r.max && tv >= r.min {
+						validNumber = true
+						break ruleCheck
+					}
+				}
+			}
+
+			if !validNumber {
+				println(tv)
+				sum += tv
+			}
+		}
+	}
+
+	println(sum)
 }
 
 func readTickets(filename string) (map[string][]ticketRule, ticket, []ticket) {
