@@ -17,7 +17,7 @@ type ticket struct {
 }
 
 func day16() {
-	rules, _, otherTickets := readTickets("input/16.txt")
+	rules, myTicket, otherTickets := readTickets("input/16.txt")
 	//fmt.Printf("%v\n", rules)
 	//fmt.Printf("%v\n", myTicket)
 	//fmt.Printf("%v\n", otherTickets)
@@ -42,7 +42,50 @@ func day16() {
 
 	}
 
-	fmt.Printf("%v\n", possRules)
+	//fmt.Printf("%v\n", possRules)
+
+	// Find a rule which only has a single true entry and remove
+	// all other columns for this rule until all rules satisfy.
+	changed := true
+	result := make(map[string]int)
+	count := 0
+	for changed {
+		changed = false
+		for currentRule, rulePoss := range possRules {
+			if len(rulePoss) == 1 {
+				count++
+				if count > 1000 {
+					println()
+				}
+
+				var pos int
+				for k := range rulePoss {
+					pos = k
+				}
+				// Remove for all others
+				for name, idx := range possRules {
+					if name == currentRule {
+						continue
+					}
+					delete(idx, pos)
+				}
+				result[currentRule] = pos
+				changed = true
+				delete(possRules, currentRule)
+			}
+		}
+	}
+
+	prod := 1
+	for name, mapping := range result {
+		if strings.HasPrefix(name, "departure") {
+			prod *= myTicket.numbers[mapping]
+		}
+
+		fmt.Printf("%v -> %v\n", name, mapping)
+	}
+	println(prod)
+
 }
 
 func validTicketRule(val int, rules []ticketRule) bool {
@@ -74,7 +117,6 @@ nextTicket:
 				}
 			}
 			if !validNumber {
-				println(tv)
 				continue nextTicket
 			}
 		}
