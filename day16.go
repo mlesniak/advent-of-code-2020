@@ -17,16 +17,22 @@ type ticket struct {
 }
 
 func day16() {
-	rules, ticket, otherTicket := readTickets("input/16.txt")
+	rules, myTicket, otherTicket := readTickets("input/16.txt")
 	fmt.Printf("%v\n", rules)
-	fmt.Printf("%v\n", ticket)
+	fmt.Printf("%v\n", myTicket)
 	fmt.Printf("%v\n", otherTicket)
 
-	sum := 0
+	validTickets := computeValidTickets(otherTicket, rules)
+
+	fmt.Printf("%v\n", validTickets)
+}
+
+func computeValidTickets(otherTicket []ticket, rules map[string][]ticketRule) []ticket {
+	var validTickets []ticket
+nextTicket:
 	for _, t := range otherTicket {
 		for _, tv := range t.numbers {
 			validNumber := false
-
 			// Check if this value is in any rule
 		ruleCheck:
 			for _, ticketRules := range rules {
@@ -37,15 +43,15 @@ func day16() {
 					}
 				}
 			}
-
 			if !validNumber {
 				println(tv)
-				sum += tv
+				continue nextTicket
 			}
 		}
-	}
 
-	println(sum)
+		validTickets = append(validTickets, t)
+	}
+	return validTickets
 }
 
 func readTickets(filename string) (map[string][]ticketRule, ticket, []ticket) {
