@@ -1,15 +1,30 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type coordinate struct {
 	x, y, z int
 }
 
+type Grid3D map[coordinate]bool
+
+func (g *Grid3D) String() string {
+	var sb strings.Builder
+
+	for k := range *g {
+		sb.WriteString(fmt.Sprintf("%v\n", k))
+	}
+
+	return sb.String()
+}
+
 func day17() {
 	initialCells := read2D("input/17.txt")
 
-	grid := make(map[coordinate]bool)
+	grid := make(Grid3D)
 
 	z := 0
 	for y := 0; y < initialCells.Height; y++ {
@@ -20,7 +35,5 @@ func day17() {
 		}
 	}
 
-	for k := range grid {
-		fmt.Printf("%v\n", k)
-	}
+	println(grid.String())
 }
