@@ -9,12 +9,27 @@ import (
 func day18() {
 	expressions := readLines("input/18.txt")
 
+	sum := 0
 	for _, expr := range expressions {
-		fmt.Printf("%v = %d\n", expr, eval(expr))
+		res := eval(expr)
+		fmt.Printf("%v = %d\n", expr, res)
+		sum += res
 	}
+	println(sum)
 }
 
 func eval(expr string) int {
+	for strings.Contains(expr, "(") {
+		start, end, value := evalSub(expr)
+		var prefix string
+		if start == 0 {
+			prefix = ""
+		} else {
+			prefix = expr[:start-1] + " "
+		}
+		expr = prefix + fmt.Sprintf("%d", value) + expr[end+1:]
+	}
+
 	parts := strings.Split(expr, " ")
 
 	result := 0
@@ -29,6 +44,36 @@ func eval(expr string) int {
 	}
 
 	return result
+}
+
+func evalSub(expr string) (int, int, int) {
+	// Find first bracket
+	start := 0
+	for i := range expr {
+		if expr[i] == '(' {
+			start = i
+			break
+		}
+	}
+
+	// Find matching bracket
+	count := 0
+	end := 0
+	for j := start + 1; j < len(expr); j++ {
+		if expr[j] == ')' && count == 0 {
+			end = j
+			break
+		}
+		if expr[j] == ')' {
+			count--
+		}
+		if expr[j] == '(' {
+			count++
+		}
+	}
+
+	result := eval(expr[start+1 : end])
+	return start, end, result
 }
 
 func compute(n1 int, op string, n2 int) int {
