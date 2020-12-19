@@ -30,6 +30,19 @@ func eval(expr string) int {
 		expr = prefix + fmt.Sprintf("%d", value) + expr[end+1:]
 	}
 
+	// Find subexpressions of +
+	idx := 0
+	for {
+		idx = strings.Index(expr, " * ")
+		pidx := strings.Index(expr, "+")
+		if idx == -1 || pidx == -1 {
+			break
+		}
+		left := eval(expr[:idx])
+		right := eval(expr[idx+3:])
+		expr = fmt.Sprintf("%d * %d", left, right)
+	}
+
 	parts := strings.Split(expr, " ")
 
 	result := 0
