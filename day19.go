@@ -16,7 +16,7 @@ func day19() {
 	rules := groups[0]
 	toCheck := groups[1]
 
-	fmt.Printf("%v\n%v\n", rules, toCheck)
+	//fmt.Printf("%v\n%v\n", rules, toCheck)
 
 	rx := parseRules(rules)
 	println(rx)
@@ -46,6 +46,25 @@ func parseRules(rules []string) string {
 		rs[matches[1]] = sr
 	}
 
+	// Fix rule 11
+	max := 10
+	var sb strings.Builder
+	for i := 1; i <= max; i++ {
+		for j := 0; j < i; j++ {
+			sb.WriteString("42 ")
+		}
+		for j := 0; j < i; j++ {
+			sb.WriteString("31")
+			if j != i-1 {
+				sb.WriteString(" ")
+			}
+		}
+		if i != max {
+			sb.WriteString(" | ")
+		}
+	}
+	rs["11"] = srule{rules: sb.String()}
+
 	return "^" + generateRegex(rs, "0") + "$"
 }
 
@@ -53,6 +72,10 @@ func generateRegex(rules map[string]srule, state string) string {
 	rule := rules[state]
 	if rule.text != "" {
 		return string(rule.text[1])
+	}
+
+	if state == "8" {
+		return fmt.Sprintf("(%v)+", generateRegex(rules, "42"))
 	}
 
 	var sb strings.Builder
