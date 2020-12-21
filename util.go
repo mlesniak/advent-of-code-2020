@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -56,6 +57,17 @@ type Grid struct {
 	Data   [][]byte
 }
 
+func (g *Grid) String() string {
+	var sb strings.Builder
+	for i, row := range g.Data {
+		sb.WriteString(fmt.Sprintf("%v", string(row)))
+		if i != len(g.Data)-1 {
+			sb.WriteString("\n")
+		}
+	}
+	return sb.String()
+}
+
 // format: row, column
 func read2D(filename string) Grid {
 	bs, err := ioutil.ReadFile(filename)
@@ -64,6 +76,10 @@ func read2D(filename string) Grid {
 	}
 
 	lines := strings.Split(string(bs), "\n")
+	return parseGrid(lines)
+}
+
+func parseGrid(lines []string) Grid {
 	grid := make([][]byte, len(lines))
 	for i, line := range lines {
 		grid[i] = []byte(line)
