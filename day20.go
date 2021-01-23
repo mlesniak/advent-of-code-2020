@@ -13,23 +13,7 @@ type tile struct {
 	sides []*tile
 }
 
-func orientationToString(o int) string {
-	switch o {
-	case 0:
-		return "North"
-	case 1:
-		return "East"
-	case 2:
-		return "South"
-	case 3:
-		return "West"
-	}
-
-	panic("unknown orientation")
-}
-
 func (t *tile) String() string {
-	//return fmt.Sprintf("%v\n%v\n", t.id, t.grid.String())
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf("*** %v\n", t.id))
@@ -106,19 +90,89 @@ func day20() {
 		//}
 	}
 
-	corners := computeProduct(tiles)
+	println(len(tiles))
 
-	// Remove borders.
-	for i := range tiles {
-		tile := &tiles[i]
-		removeBorder(tile)
+	howManyPointToMe := make(map[int]int)
+	for _, tile := range tiles {
+		for _, side := range tile.sides {
+			if side == nil {
+				continue
+			}
+			howManyPointToMe[side.id]++
+		}
 	}
 
-	//fmt.Printf("%d\n%s\n", tiles[0].id, tiles[0].grid.String())
-	//return
+	perSide := make(map[int]int)
+	for k, v := range howManyPointToMe {
+		fmt.Printf("id=%d <- #%d\n", k, v)
+		perSide[v]++
+	}
+	println()
+	for k, v := range perSide {
+		fmt.Printf("sides=%d <- #%d\n", k, v)
+	}
+	return
 
-	// create combined image.
+	corners := computeProduct(tiles)
+
+	// Rotate corners.
+	//for !(corners[0].sides[0] != nil && corners[0].sides[1] != nil) {
+	//	corners[0].rotate()
+	//}
+
+	//for !(corners[1].sides[1] != nil && corners[1].sides[2] != nil) {
+	//	corners[1].rotate()
+	//}
+
+	//for !(corners[2].sides[2] != nil && corners[2].sides[3] != nil) {
+	//	corners[2].rotate()
+	//}
+	//
+	//for !(corners[3].sides[3] != nil && corners[3].sides[0] != nil) {
+	//	corners[3].rotate()
+	//}
+	//
+	//for _, corner := range corners {
+	//	fmt.Printf("%v\n", corner.String())
+	//}
+
+	//head := &corners[1]
+	//for head.sides[2] != nil {
+	//
+	//	head = head.sides[2]
+	//}
+
+	// Top left corner
+	//direction := 1
+	//direction2 := 2
+	//rowStart := &corners[direction]
+	//
+	//for {
+	//	//Start with the corner and use opposites till end of row
+	//	cur := rowStart
+	//	for {
+	//		fmt.Printf("%v\n", cur.id)
+	//		next := cur.sides[direction]
+	//		if cur.sides[direction] == nil {
+	//			break
+	//		}
+	//
+	//		for i := 0; i <= 3; i++ {
+	//			if next.sides[i] != nil && cur.id == next.sides[i].id {
+	//				direction = (i + 2) % 4
+	//			}
+	//		}
+	//		cur = next
+	//	}
+	//
+	//	rowStart = rowStart.sides[direction2]
+	//	if rowStart == nil {
+	//		break
+	//	}
+	//}
+
 	seen := make(map[int]struct{})
+
 	start := &corners[0]
 	var dir1 int
 	var dir2 int
@@ -141,37 +195,62 @@ func day20() {
 	for start != nil {
 		head := start
 		for head != nil {
-			fmt.Printf("%v\n", head.id)
-			if head.sides[dir1] != nil {
-				_, found := seen[head.sides[dir1].id]
-				if !found {
-					head = head.sides[dir1]
-					seen[head.id] = struct{}{}
-					continue
-				} else {
-					head = head.sides[(dir1+2)%4]
-					if head == nil {
-						continue
-					}
-					seen[head.id] = struct{}{}
-					continue
-				}
-			} else if head.sides[(dir1+2)%4] != nil {
-				_, found := seen[head.sides[(dir1+2)%4].id]
-				if !found {
-					head = head.sides[(dir1+2)%4]
-					seen[head.id] = struct{}{}
-					continue
-				} else {
-					head = head.sides[dir1]
-					if head == nil {
-						continue
-					}
-					seen[head.id] = struct{}{}
-					continue
-				}
+			fmt.Printf("%v ", head.id)
+			next := head.sides[dir1]
+			if next == nil {
+				next = head.sides[(dir1+2)%4]
 			}
+			if _, found := seen[next.id]; found {
+				next = head.sides[(dir1+2)%4]
+			}
+			head = next
+			if head == nil {
+				continue
+			}
+			seen[head.id] = struct{}{}
+			//if next == nil {
+			//	break
+			//}
+			//for i := range head.sides {
+			//	if head.sides[i] != nil && head.sides[i].id == head.id {
+			//		// Take the opposite side.
+			//		head = head.sides[(i+2)%4]
+			//		break
+			//	}
+			//}
+
+			//if head.sides[dir1] != nil {
+			//	_, found := seen[head.sides[dir1].id]
+			//	if !found {
+			//		head = head.sides[dir1]
+			//		seen[head.id] = struct{}{}
+			//		continue
+			//	} else {
+			//		head = head.sides[(dir1+2)%4]
+			//		if head == nil {
+			//			continue
+			//		}
+			//		seen[head.id] = struct{}{}
+			//		continue
+			//	}
+			//} else if head.sides[(dir1+2)%4] != nil {
+			//	_, found := seen[head.sides[(dir1+2)%4].id]
+			//	if !found {
+			//		head = head.sides[(dir1+2)%4]
+			//		seen[head.id] = struct{}{}
+			//		continue
+			//	} else {
+			//		head = head.sides[dir1]
+			//		if head == nil {
+			//			continue
+			//		}
+			//		seen[head.id] = struct{}{}
+			//		continue
+			//	}
+			//}
 		}
+
+		println()
 
 		if start.sides[dir2] != nil {
 			_, found := seen[start.sides[dir2].id]
@@ -202,13 +281,6 @@ func day20() {
 		}
 	}
 
-}
-
-func removeBorder(t *tile) {
-	t.grid.Data = t.grid.Data[1 : len(t.grid.Data)-1]
-	for i := range t.grid.Data {
-		t.grid.Data[i] = t.grid.Data[i][1 : len(t.grid.Data[i])-1]
-	}
 }
 
 func fixed(candidate *tile) bool {
