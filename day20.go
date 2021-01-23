@@ -108,65 +108,18 @@ func day20() {
 
 	corners := computeProduct(tiles)
 
-	// Rotate corners.
-	//for !(corners[0].sides[0] != nil && corners[0].sides[1] != nil) {
-	//	corners[0].rotate()
-	//}
+	// Remove borders.
+	for i := range tiles {
+		tile := &tiles[i]
+		removeBorder(tile)
+	}
 
-	//for !(corners[1].sides[1] != nil && corners[1].sides[2] != nil) {
-	//	corners[1].rotate()
-	//}
+	//fmt.Printf("%d\n%s\n", tiles[0].id, tiles[0].grid.String())
+	//return
 
-	//for !(corners[2].sides[2] != nil && corners[2].sides[3] != nil) {
-	//	corners[2].rotate()
-	//}
-	//
-	//for !(corners[3].sides[3] != nil && corners[3].sides[0] != nil) {
-	//	corners[3].rotate()
-	//}
-	//
-	//for _, corner := range corners {
-	//	fmt.Printf("%v\n", corner.String())
-	//}
-
-	//head := &corners[1]
-	//for head.sides[2] != nil {
-	//
-	//	head = head.sides[2]
-	//}
-
-	// Top left corner
-	//direction := 1
-	//direction2 := 2
-	//rowStart := &corners[direction]
-	//
-	//for {
-	//	//Start with the corner and use opposites till end of row
-	//	cur := rowStart
-	//	for {
-	//		fmt.Printf("%v\n", cur.id)
-	//		next := cur.sides[direction]
-	//		if cur.sides[direction] == nil {
-	//			break
-	//		}
-	//
-	//		for i := 0; i <= 3; i++ {
-	//			if next.sides[i] != nil && cur.id == next.sides[i].id {
-	//				direction = (i + 2) % 4
-	//			}
-	//		}
-	//		cur = next
-	//	}
-	//
-	//	rowStart = rowStart.sides[direction2]
-	//	if rowStart == nil {
-	//		break
-	//	}
-	//}
-
+	// create combined image.
 	seen := make(map[int]struct{})
-
-	start := &corners[3]
+	start := &corners[0]
 	var dir1 int
 	var dir2 int
 	first := false
@@ -249,6 +202,13 @@ func day20() {
 		}
 	}
 
+}
+
+func removeBorder(t *tile) {
+	t.grid.Data = t.grid.Data[1 : len(t.grid.Data)-1]
+	for i := range t.grid.Data {
+		t.grid.Data[i] = t.grid.Data[i][1 : len(t.grid.Data[i])-1]
+	}
 }
 
 func fixed(candidate *tile) bool {
