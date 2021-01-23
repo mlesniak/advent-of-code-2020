@@ -29,26 +29,51 @@ func orientationToString(o int) string {
 }
 
 func (t *tile) String() string {
-	return fmt.Sprintf("%v\n%v\n", t.id, t.grid.String())
+	//return fmt.Sprintf("%v\n%v\n", t.id, t.grid.String())
+	var sb strings.Builder
+
+	sb.WriteString(fmt.Sprintf("*** %v\n", t.id))
+	for i := 0; i <= 3; i++ {
+		id := "</>"
+		if t.sides[i] != nil {
+			id = fmt.Sprintf("%d", t.sides[i].id)
+		}
+		sb.WriteString(fmt.Sprintf("%v -> %v\n", i, id))
+	}
+
+	return sb.String()
 }
 
-// 2971    1489    1171
-// 2729    1427    2473
+// 2971     1489     1171
+// 2729              2473
+//
+
+// 1951    2311
+// 2729
+
+// 2971    1489
+// 2729
+
+// 2311    3079
+//         2473
+
 // 1951    2311    3079
+// 2729    1427    2473
+// 2971    1489    1171
 
 func day20() {
 	tiles := readTiles()
 
 	for tileIndex := range tiles {
 		tile := &tiles[tileIndex]
-		fmt.Printf("- TILE %v----------------------------------------------\n", tile.id)
+		//fmt.Printf("- TILE %v----------------------------------------------\n", tile.id)
 
 		for candIndex := range tiles {
 			if candIndex == tileIndex {
 				continue
 			}
 			candidate := &tiles[candIndex]
-			fmt.Printf("? %v\n", candidate.id)
+			//fmt.Printf("? %v\n", candidate.id)
 
 		nextSide:
 			for candSide := 0; candSide <= 3; candSide++ {
@@ -56,8 +81,8 @@ func day20() {
 				for flip := 0; flip <= 1; flip++ {
 					for rotate := 0; rotate <= 3; rotate++ {
 						if matchTile(candidate, tile, candSide) {
-							fmt.Printf("! match candSide=%v to tileSide=%v\n", candSide, (candSide+2)%4)
-							fmt.Printf("tile=\n%v\ncand=%v\n", tile, candidate)
+							//fmt.Printf("! match candSide=%v to tileSide=%v\n", candSide, (candSide+2)%4)
+							//fmt.Printf("tile=\n%v\ncand=%v\n", tile, candidate)
 							linkTile(tile, candidate, (candSide+2)%4)
 							continue nextSide
 						}
@@ -71,17 +96,159 @@ func day20() {
 			}
 		}
 
-		fmt.Printf("*** %v\n", tile.id)
-		for i := 0; i <= 3; i++ {
-			id := "</>"
-			if tile.sides[i] != nil {
-				id = fmt.Sprintf("%d", tile.sides[i].id)
+		//fmt.Printf("*** %v\n", tile.id)
+		//for i := 0; i <= 3; i++ {
+		//	id := "</>"
+		//	if tile.sides[i] != nil {
+		//		id = fmt.Sprintf("%d", tile.sides[i].id)
+		//	}
+		//	fmt.Printf("%v -> %v\n", i, id)
+		//}
+	}
+
+	corners := computeProduct(tiles)
+
+	// Rotate corners.
+	//for !(corners[0].sides[0] != nil && corners[0].sides[1] != nil) {
+	//	corners[0].rotate()
+	//}
+
+	//for !(corners[1].sides[1] != nil && corners[1].sides[2] != nil) {
+	//	corners[1].rotate()
+	//}
+
+	//for !(corners[2].sides[2] != nil && corners[2].sides[3] != nil) {
+	//	corners[2].rotate()
+	//}
+	//
+	//for !(corners[3].sides[3] != nil && corners[3].sides[0] != nil) {
+	//	corners[3].rotate()
+	//}
+	//
+	//for _, corner := range corners {
+	//	fmt.Printf("%v\n", corner.String())
+	//}
+
+	//head := &corners[1]
+	//for head.sides[2] != nil {
+	//
+	//	head = head.sides[2]
+	//}
+
+	// Top left corner
+	//direction := 1
+	//direction2 := 2
+	//rowStart := &corners[direction]
+	//
+	//for {
+	//	//Start with the corner and use opposites till end of row
+	//	cur := rowStart
+	//	for {
+	//		fmt.Printf("%v\n", cur.id)
+	//		next := cur.sides[direction]
+	//		if cur.sides[direction] == nil {
+	//			break
+	//		}
+	//
+	//		for i := 0; i <= 3; i++ {
+	//			if next.sides[i] != nil && cur.id == next.sides[i].id {
+	//				direction = (i + 2) % 4
+	//			}
+	//		}
+	//		cur = next
+	//	}
+	//
+	//	rowStart = rowStart.sides[direction2]
+	//	if rowStart == nil {
+	//		break
+	//	}
+	//}
+
+	seen := make(map[int]struct{})
+
+	start := &corners[3]
+	var dir1 int
+	var dir2 int
+	first := false
+	for i := 0; i <= 3; i++ {
+		if start.sides[i] != nil {
+			if !first {
+				dir1 = i
+				first = true
+				continue
+			} else {
+				dir2 = i
+				break
 			}
-			fmt.Printf("%v -> %v\n", i, id)
 		}
 	}
 
-	computeProduct(tiles)
+	seen[start.id] = struct{}{}
+
+	for start != nil {
+		head := start
+		for head != nil {
+			fmt.Printf("%v\n", head.id)
+			if head.sides[dir1] != nil {
+				_, found := seen[head.sides[dir1].id]
+				if !found {
+					head = head.sides[dir1]
+					seen[head.id] = struct{}{}
+					continue
+				} else {
+					head = head.sides[(dir1+2)%4]
+					if head == nil {
+						continue
+					}
+					seen[head.id] = struct{}{}
+					continue
+				}
+			} else if head.sides[(dir1+2)%4] != nil {
+				_, found := seen[head.sides[(dir1+2)%4].id]
+				if !found {
+					head = head.sides[(dir1+2)%4]
+					seen[head.id] = struct{}{}
+					continue
+				} else {
+					head = head.sides[dir1]
+					if head == nil {
+						continue
+					}
+					seen[head.id] = struct{}{}
+					continue
+				}
+			}
+		}
+
+		if start.sides[dir2] != nil {
+			_, found := seen[start.sides[dir2].id]
+			if !found {
+				start = start.sides[dir2]
+				seen[start.id] = struct{}{}
+				continue
+			} else {
+				start = start.sides[(dir2+2)%4]
+				if start == nil {
+					continue
+				}
+				continue
+			}
+		} else if start.sides[(dir2+2)%4] != nil {
+			_, found := seen[start.sides[(dir2+2)%4].id]
+			if !found {
+				start = start.sides[(dir2+2)%4]
+				seen[start.id] = struct{}{}
+				continue
+			} else {
+				start = start.sides[dir2]
+				if start == nil {
+					continue
+				}
+				continue
+			}
+		}
+	}
+
 }
 
 func fixed(candidate *tile) bool {
@@ -102,8 +269,10 @@ func tileID(tile *tile) string {
 	return fmt.Sprintf("%d", tile.id)
 }
 
-func computeProduct(tiles []tile) {
+func computeProduct(tiles []tile) []tile {
 	var prod int64 = 1
+
+	var cornerTiles []tile
 
 	for _, tile := range tiles {
 		count := 0
@@ -112,13 +281,24 @@ func computeProduct(tiles []tile) {
 				count++
 			}
 		}
-		fmt.Printf("%v = %v\n", tile.id, count)
+		//fmt.Printf("%v = %v\n", tile.id, count)
 		if count == 2 {
+			fmt.Printf("*** %v\n", tile.id)
+			for i := 0; i <= 3; i++ {
+				id := "</>"
+				if tile.sides[i] != nil {
+					id = fmt.Sprintf("%d", tile.sides[i].id)
+				}
+				fmt.Printf("%v -> %v\n", i, id)
+			}
 			prod *= int64(tile.id)
+
+			cornerTiles = append(cornerTiles, tile)
 		}
 	}
 
 	println(prod)
+	return cornerTiles
 }
 
 func linkTile(t *tile, candidate *tile, tileSide int) {
@@ -275,40 +455,18 @@ func readTiles() []tile {
 	return tiles
 }
 
-func xmatchTile(t *tile, candidate *tile, orientation int) bool {
-	// Find side for tile
-	// Find side for candidate
-	// Compare sides
+// 1171 2473 3079
+// 1489      2311
+// 2971 2729 1951
 
-	var sideTile []byte
-	var sideCandidate []byte
+// 2729 2971
+//      1489
 
-	switch orientation {
-	case 0:
-		sideTile = t.grid.Data[candidate.grid.Height-1]
-		sideCandidate = candidate.grid.Data[0]
-	case 2:
-		sideTile = t.grid.Data[0]
-		sideCandidate = candidate.grid.Data[t.grid.Height-1]
-	case 3:
-		sideCandidate = make([]byte, t.grid.Height)
-		for i := 0; i < t.grid.Height; i++ {
-			sideCandidate[i] = t.grid.Data[i][0]
-		}
-		sideTile = make([]byte, candidate.grid.Height)
-		for i := 0; i < candidate.grid.Height; i++ {
-			sideTile[i] = candidate.grid.Data[i][candidate.grid.Width-1]
-		}
-	case 1:
-		sideCandidate = make([]byte, t.grid.Height)
-		for i := 0; i < t.grid.Height; i++ {
-			sideCandidate[i] = t.grid.Data[i][t.grid.Width-1]
-		}
-		sideTile = make([]byte, candidate.grid.Height)
-		for i := 0; i < candidate.grid.Height; i++ {
-			sideTile[i] = candidate.grid.Data[i][0]
-		}
-	}
+// 1171 2473
+// 1489
 
-	return bytes.Compare(sideTile, sideCandidate) == 0
-}
+// 2311
+// 1951 2729
+
+//      2311
+// 2473 3079
