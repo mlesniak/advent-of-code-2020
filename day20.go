@@ -61,10 +61,19 @@ func day20() {
 
 		nextSide:
 			for candSide := 0; candSide <= 3; candSide++ {
+				if candidate.sides[candSide] != nil {
+					continue
+				}
+
 				// Try all possibilities to match against the candidates side.
 				for flip := 0; flip <= 1; flip++ {
 					for rotate := 0; rotate <= 3; rotate++ {
 						if matchTile(candidate, tile, candSide) {
+							fmt.Printf("%v %v %v\n", candidate.id, tile.id, candSide)
+							if candidate.id == 1759 && tile.id == 1193 {
+								fmt.Printf("1759\n%s\n", candidate.grid.String())
+								fmt.Printf("1191\n%s\n", tile.grid.String())
+							}
 							//fmt.Printf("! match candSide=%v to tileSide=%v\n", candSide, (candSide+2)%4)
 							//fmt.Printf("tile=\n%v\ncand=%v\n", tile, candidate)
 							linkTile(tile, candidate, (candSide+2)%4)
@@ -111,7 +120,6 @@ func day20() {
 	for k, v := range perSide {
 		fmt.Printf("sides=%d <- #%d\n", k, v)
 	}
-	return
 
 	corners := computeProduct(tiles)
 
@@ -191,96 +199,64 @@ func day20() {
 	}
 
 	seen[start.id] = struct{}{}
+	println(dir1)
+	println(dir2)
 
-	for start != nil {
+	print := false
+
+	// correct all rows
+	for {
+		// Correct a single row
 		head := start
 		for head != nil {
+			if head.id == 1471 {
+				print = true
+			}
 			fmt.Printf("%v ", head.id)
+			if print {
+				fmt.Printf("%s\n", head.String())
+				fmt.Printf("%s\n", head.grid.String())
+			}
 			next := head.sides[dir1]
 			if next == nil {
-				next = head.sides[(dir1+2)%4]
+				break
 			}
-			if _, found := seen[next.id]; found {
-				next = head.sides[(dir1+2)%4]
+
+			// solange rotieren, bis next.side[dir+2%4] == head.id ist
+			for {
+				if next.sides[(dir1+2)%4] != nil && next.sides[(dir1+2)%4].id == head.id {
+					break
+				}
+				//if next.sides[(dir1+2)%4] == nil {
+				//	next.rotate()
+				//	continue
+				//}
+
+				next.rotate() // maybe randomize to simplify?
 			}
 			head = next
-			if head == nil {
-				continue
-			}
-			seen[head.id] = struct{}{}
-			//if next == nil {
-			//	break
-			//}
-			//for i := range head.sides {
-			//	if head.sides[i] != nil && head.sides[i].id == head.id {
-			//		// Take the opposite side.
-			//		head = head.sides[(i+2)%4]
-			//		break
-			//	}
-			//}
-
-			//if head.sides[dir1] != nil {
-			//	_, found := seen[head.sides[dir1].id]
-			//	if !found {
-			//		head = head.sides[dir1]
-			//		seen[head.id] = struct{}{}
-			//		continue
-			//	} else {
-			//		head = head.sides[(dir1+2)%4]
-			//		if head == nil {
-			//			continue
-			//		}
-			//		seen[head.id] = struct{}{}
-			//		continue
-			//	}
-			//} else if head.sides[(dir1+2)%4] != nil {
-			//	_, found := seen[head.sides[(dir1+2)%4].id]
-			//	if !found {
-			//		head = head.sides[(dir1+2)%4]
-			//		seen[head.id] = struct{}{}
-			//		continue
-			//	} else {
-			//		head = head.sides[dir1]
-			//		if head == nil {
-			//			continue
-			//		}
-			//		seen[head.id] = struct{}{}
-			//		continue
-			//	}
-			//}
 		}
 
 		println()
-
-		if start.sides[dir2] != nil {
-			_, found := seen[start.sides[dir2].id]
-			if !found {
-				start = start.sides[dir2]
-				seen[start.id] = struct{}{}
-				continue
-			} else {
-				start = start.sides[(dir2+2)%4]
-				if start == nil {
-					continue
-				}
+		next := start.sides[dir2]
+		if next == nil {
+			break
+		}
+		for {
+			next.rotate() // maybe randomize to simplify?
+			if next.sides[(dir1+2)%4] == nil {
 				continue
 			}
-		} else if start.sides[(dir2+2)%4] != nil {
-			_, found := seen[start.sides[(dir2+2)%4].id]
-			if !found {
-				start = start.sides[(dir2+2)%4]
-				seen[start.id] = struct{}{}
-				continue
-			} else {
-				start = start.sides[dir2]
-				if start == nil {
-					continue
-				}
-				continue
+			if next.sides[(dir1+2)%4].id == start.id {
+				break
 			}
 		}
-	}
+		start = next
 
+		if print {
+			return
+		}
+	}
 }
 
 func fixed(candidate *tile) bool {
