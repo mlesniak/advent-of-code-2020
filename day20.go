@@ -76,9 +76,17 @@ func day20() {
 	//start.rotate()
 	//start.rotate()
 
+	ids := make([][]int, 12)
+	for i := 0; i < 12; i++ {
+		ids[i] = make([]int, 12)
+	}
+	y := 0
+	x := 0
+
 	for {
 		cur := start
 		for cur != nil {
+			ids[y][x] = cur.id
 			fmt.Printf("%v ", cur.id)
 			next := cur.sides[dir1]
 			if next == nil {
@@ -94,7 +102,10 @@ func day20() {
 				}
 			}
 			cur = next
+			x++
 		}
+		y++
+		x = 0
 		fmt.Println() // 1471 2801 1759 1193 2749 2153 3821 1951 1789 1439 2137
 
 		tmp := start.sides[dir2]
@@ -120,6 +131,48 @@ func day20() {
 		dir1 = 0
 		start = tmp
 	}
+
+	tileMap := make(map[int]*tile)
+	for _, t := range tiles {
+		tmp := t
+		tileMap[t.id] = &tmp
+		removeBorder(&t)
+	}
+
+	// Create large string from map. 96 x 96 grid
+
+	var sb strings.Builder
+	for row := 0; row < 12; row++ {
+		for line := 0; line < 8; line++ {
+			for col := 0; col < 12; col++ {
+				t := tileMap[ids[row][col]]
+				sb.Write(t.grid.Data[line])
+			}
+			sb.WriteString("\n")
+		}
+	}
+	image := sb.String()
+	lines := strings.Split(image, "\n")
+	lines = lines[0 : len(lines)-1]
+	g := parseGrid(lines)
+	ti := tile{
+		grid:  &g,
+		id:    0,
+		sides: make([]*tile, 4),
+	}
+	//ti.flip()
+	//ti.rotate()
+	//ti.rotate()
+	//ti.rotate()
+	fmt.Printf("%s\n", ti.grid.String())
+
+	num := strings.Count(ti.grid.String(), "#")
+	fmt.Printf("Number of #: %d\n", num)
+	sm := 14
+	count := 2
+	fmt.Printf("%d\n", num-sm*count)
+
+	//rx := regexp.MustCompile(`(?s)##`)
 }
 
 func analysis(tiles []tile) {
@@ -143,6 +196,14 @@ func analysis(tiles []tile) {
 	println()
 	for k, v := range perSide {
 		fmt.Printf("sides=%d <- #%d\n", k, v)
+	}
+
+}
+
+func removeBorder(t *tile) {
+	t.grid.Data = t.grid.Data[1 : len(t.grid.Data)-1]
+	for i := range t.grid.Data {
+		t.grid.Data[i] = t.grid.Data[i][1 : len(t.grid.Data[i])-1]
 	}
 }
 
