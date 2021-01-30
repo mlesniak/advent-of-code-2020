@@ -61,10 +61,65 @@ func day20() {
 		}
 	}
 
-	//analysis(tiles)
+	//analysis(tiles)  1471 1637 3877 3407 1721 1783 2377 2309 1753 2797 2971 2677
 
 	corners := computeProduct(tiles)
-	println(corners)
+	// dir2 := 3
+
+	// Walk in first direction
+	start := &corners[0]
+	fmt.Printf("%v\n", start)
+	dir1 := 0
+	dir2 := 3
+
+	//start = start.sides[3]
+	//start.rotate()
+	//start.rotate()
+
+	for {
+		cur := start
+		for cur != nil {
+			fmt.Printf("%v ", cur.id)
+			next := cur.sides[dir1]
+			if next == nil {
+				break
+			}
+			// Determine next side to follow
+			for i, sideNode := range next.sides {
+				if sideNode == nil {
+					continue
+				}
+				if sideNode.id == cur.id {
+					dir1 = (i + 2) % 4
+				}
+			}
+			cur = next
+		}
+		fmt.Println() // 1471 2801 1759 1193 2749 2153 3821 1951 1789 1439 2137
+
+		tmp := start.sides[dir2]
+		if tmp == nil {
+			break
+		}
+
+		for {
+			if tmp.sides[2] == nil {
+				break
+			}
+			//fmt.Printf("Rotating %v\n", tmp.id)
+			tmp.rotate()
+		}
+		for i, sideNode := range tmp.sides {
+			if sideNode == nil {
+				continue
+			}
+			if sideNode.id == start.id {
+				dir2 = (i + 2) % 4
+			}
+		}
+		dir1 = 0
+		start = tmp
+	}
 }
 
 func analysis(tiles []tile) {
