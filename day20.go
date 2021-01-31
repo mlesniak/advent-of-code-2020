@@ -205,15 +205,21 @@ func day20() {
 		id:    0,
 		sides: make([]*tile, 4),
 	}
-	//ti.flip()
-	//ti.rotate()
+	ti.flip()
+	ti.rotate()
 	//ti.rotate()
 	//ti.rotate()
 	fmt.Printf("%s\n", ti.grid.String())
 
+	//pattern := `(?s)
+	//..................#.
+	//#....##....##....###
+	//.#..#..#..#..#..#...
+	//`
+
 	num := strings.Count(ti.grid.String(), "#")
 	fmt.Printf("Number of #: %d\n", num)
-	sm := 14
+	sm := 15
 	count := 2
 	fmt.Printf("%d\n", num-sm*count)
 
