@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
 )
@@ -61,16 +62,50 @@ func day20() {
 		}
 	}
 
+	for {
+		finished := true
+		for i := range tiles {
+			tile := &tiles[i]
+			for j := range tile.sides {
+				neighbor := tile.sides[j]
+				if neighbor == nil {
+					continue
+				}
+				// Brute-Force matching.
+				for !matchTile(tile, neighbor, j) {
+					fmt.Printf("Fixing %d/%d %d\n", tile.id, neighbor.id, j)
+					finished = false
+					if rand.Float32() > 0.5 {
+						neighbor.rotate()
+					} else {
+						neighbor.flip()
+					}
+				}
+			}
+		}
+
+		if finished {
+			break
+		}
+	}
+
 	//analysis(tiles)  1471 1637 3877 3407 1721 1783 2377 2309 1753 2797 2971 2677
 
 	corners := computeProduct(tiles)
 	// dir2 := 3
 
 	// Walk in first direction
+	// Use top left corner
 	start := &corners[0]
 	fmt.Printf("%v\n", start)
-	dir1 := 0
-	dir2 := 3
+	dir1 := 1
+	dir2 := 2
+
+	// For test data solely ----------------------
+	//for start.sides[0] == nil || start.sides[3] == nil {
+	//	start.rotate()
+	//}
+	// For test data solely ----------------------
 
 	//start = start.sides[3]
 	//start.rotate()
@@ -113,13 +148,6 @@ func day20() {
 			break
 		}
 
-		for {
-			if tmp.sides[2] == nil {
-				break
-			}
-			//fmt.Printf("Rotating %v\n", tmp.id)
-			tmp.rotate()
-		}
 		for i, sideNode := range tmp.sides {
 			if sideNode == nil {
 				continue
@@ -128,7 +156,22 @@ func day20() {
 				dir2 = (i + 2) % 4
 			}
 		}
-		dir1 = 0
+		c := 0
+		for _, s := range tmp.sides {
+			if s != nil {
+				c++
+			}
+		}
+		if c == 3 {
+			for {
+				if tmp.sides[3] != nil {
+					tmp.rotate()
+				} else {
+					break
+				}
+			}
+		}
+		dir1 = 1
 		start = tmp
 	}
 
@@ -141,10 +184,12 @@ func day20() {
 
 	// Create large string from map. 96 x 96 grid
 
+	size := 12
+	size = 3
 	var sb strings.Builder
-	for row := 0; row < 12; row++ {
+	for row := 0; row < size; row++ {
 		for line := 0; line < 8; line++ {
-			for col := 0; col < 12; col++ {
+			for col := 0; col < size; col++ {
 				t := tileMap[ids[row][col]]
 				sb.Write(t.grid.Data[line])
 			}
