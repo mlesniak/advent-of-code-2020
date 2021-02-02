@@ -34,34 +34,55 @@ func day20() {
 	solveWithoutCorrectMatching(tiles)
 	corners := computeProduct(tiles)
 
-	// TODO(mlesniak) Rotate each corner until fixed.
 	start := &corners[1]
-	current := start
 	row := 0
+	prevRowIDs := make([]int, 11)
 	for {
-		next := current.sides[1]
+		current := start
+
+		col := 0
+		for {
+			next := current.sides[1]
+			if next == nil {
+				break
+			}
+			// Rotate until correct orientation.
+			for i := 0; i < 8; i++ {
+				//fmt.Printf("i=%d\n%v\n", i, next.grid.String())
+				if next.sides[3] != nil && next.sides[3].id == current.id {
+					if row == 0 && next.sides[0] == nil {
+						break
+					}
+					if row > 0 && next.sides[0] != nil && next.sides[0].id == prevRowIDs[col] {
+						break
+					}
+				}
+				if i == 4 {
+					next.flip()
+				}
+				next.rotate()
+			}
+			prevRowIDs[col] = next.id
+			col++
+			current = next
+		}
+
+		next := start.sides[2]
 		if next == nil {
 			break
 		}
-		// Rotate until correct orientation.
-		found := false
 		for i := 0; i < 8; i++ {
-			fmt.Printf("i=%d\n%v\n", i, next.grid.String())
-			if next.sides[3] != nil && next.sides[3].id == current.id {
-				if row == 0 && next.sides[0] == nil {
-					found = true
-					break
-				}
+			if next.sides[3] == nil && next.sides[0] != nil && next.sides[0].id == start.id {
+				break
 			}
 			if i == 4 {
 				next.flip()
 			}
 			next.rotate()
 		}
-		if !found {
-			panic("")
-		}
-		current = next
+		start = next
+
+		row++
 	}
 
 	// Use top left corner as starting point.
@@ -81,7 +102,7 @@ func countPattern(ti tile) {
 	num := strings.Count(ti.grid.String(), "#")
 	fmt.Printf("Number of #: %d\n", num)
 	sm := 15
-	count := 2
+	count := 26 // manually counted
 	fmt.Printf("%d\n", num-sm*count)
 }
 
