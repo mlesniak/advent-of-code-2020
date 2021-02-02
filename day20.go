@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"strings"
 )
@@ -32,6 +31,61 @@ func (t *tile) String() string {
 func day20() {
 	tiles := readTiles()
 
+	solveWithoutCorrectMatching(tiles)
+	corners := computeProduct(tiles)
+
+	// TODO(mlesniak) Rotate each corner until fixed.
+	start := &corners[1]
+	current := start
+	row := 0
+	for {
+		next := current.sides[1]
+		if next == nil {
+			break
+		}
+		// Rotate until correct orientation.
+		found := false
+		for i := 0; i < 8; i++ {
+			fmt.Printf("i=%d\n%v\n", i, next.grid.String())
+			if next.sides[3] != nil && next.sides[3].id == current.id {
+				if row == 0 && next.sides[0] == nil {
+					found = true
+					break
+				}
+			}
+			if i == 4 {
+				next.flip()
+			}
+			next.rotate()
+		}
+		if !found {
+			panic("")
+		}
+		current = next
+	}
+
+	// Use top left corner as starting point.
+	ids, tileMap := createIDsInCorrectOrder(corners, tiles)
+
+	ti := createPattern(tileMap, ids)
+	countPattern(ti)
+}
+
+func countPattern(ti tile) {
+	// Compute monster value.
+	// pattern := `(?s)
+	// ..................#.
+	// #....##....##....###
+	// .#..#..#..#..#..#...
+	// `
+	num := strings.Count(ti.grid.String(), "#")
+	fmt.Printf("Number of #: %d\n", num)
+	sm := 15
+	count := 2
+	fmt.Printf("%d\n", num-sm*count)
+}
+
+func solveWithoutCorrectMatching(tiles []tile) {
 	for tileIndex := range tiles {
 		tile := &tiles[tileIndex]
 
@@ -61,131 +115,10 @@ func day20() {
 			}
 		}
 	}
+}
 
-	for {
-		finished := true
-		for i := range tiles {
-			tile := &tiles[i]
-			for j := range tile.sides {
-				neighbor := tile.sides[j]
-				if neighbor == nil {
-					continue
-				}
-				// Brute-Force matching.
-				for !matchTile(tile, neighbor, j) {
-					fmt.Printf("Fixing %d/%d %d\n", tile.id, neighbor.id, j)
-					finished = false
-					if rand.Float32() > 0.5 {
-						neighbor.rotate()
-					} else {
-						neighbor.flip()
-					}
-				}
-			}
-		}
-
-		if finished {
-			break
-		}
-	}
-
-	//analysis(tiles)  1471 1637 3877 3407 1721 1783 2377 2309 1753 2797 2971 2677
-
-	corners := computeProduct(tiles)
-	// dir2 := 3
-
-	// Walk in first direction
-	// Use top left corner
-	start := &corners[0]
-	fmt.Printf("%v\n", start)
-	dir1 := 1
-	dir2 := 2
-
-	// For test data solely ----------------------
-	//for start.sides[0] == nil || start.sides[3] == nil {
-	//	start.rotate()
-	//}
-	// For test data solely ----------------------
-
-	//start = start.sides[3]
-	//start.rotate()
-	//start.rotate()
-
-	ids := make([][]int, 12)
-	for i := 0; i < 12; i++ {
-		ids[i] = make([]int, 12)
-	}
-	y := 0
-	x := 0
-
-	for {
-		cur := start
-		for cur != nil {
-			ids[y][x] = cur.id
-			fmt.Printf("%v ", cur.id)
-			next := cur.sides[dir1]
-			if next == nil {
-				break
-			}
-			// Determine next side to follow
-			for i, sideNode := range next.sides {
-				if sideNode == nil {
-					continue
-				}
-				if sideNode.id == cur.id {
-					dir1 = (i + 2) % 4
-				}
-			}
-			cur = next
-			x++
-		}
-		y++
-		x = 0
-		fmt.Println() // 1471 2801 1759 1193 2749 2153 3821 1951 1789 1439 2137
-
-		tmp := start.sides[dir2]
-		if tmp == nil {
-			break
-		}
-
-		for i, sideNode := range tmp.sides {
-			if sideNode == nil {
-				continue
-			}
-			if sideNode.id == start.id {
-				dir2 = (i + 2) % 4
-			}
-		}
-		c := 0
-		for _, s := range tmp.sides {
-			if s != nil {
-				c++
-			}
-		}
-		if c == 3 {
-			for {
-				if tmp.sides[3] != nil {
-					tmp.rotate()
-				} else {
-					break
-				}
-			}
-		}
-		dir1 = 1
-		start = tmp
-	}
-
-	tileMap := make(map[int]*tile)
-	for _, t := range tiles {
-		tmp := t
-		tileMap[t.id] = &tmp
-		removeBorder(&t)
-	}
-
-	// Create large string from map. 96 x 96 grid
-
+func createPattern(tileMap map[int]*tile, ids [][]int) tile {
 	size := 12
-	size = 3
 	var sb strings.Builder
 	for row := 0; row < size; row++ {
 		for line := 0; line < 8; line++ {
@@ -205,25 +138,59 @@ func day20() {
 		id:    0,
 		sides: make([]*tile, 4),
 	}
-	ti.flip()
-	ti.rotate()
+	//ti.flip()
+	//ti.rotate()
 	//ti.rotate()
 	//ti.rotate()
 	fmt.Printf("%s\n", ti.grid.String())
+	return ti
+}
 
-	//pattern := `(?s)
-	//..................#.
-	//#....##....##....###
-	//.#..#..#..#..#..#...
-	//`
+func createIDsInCorrectOrder(corners []tile, tiles []tile) ([][]int, map[int]*tile) {
+	start := &corners[1]
+	fmt.Printf("%v\n", start)
+	dir1 := 1
+	dir2 := 2
 
-	num := strings.Count(ti.grid.String(), "#")
-	fmt.Printf("Number of #: %d\n", num)
-	sm := 15
-	count := 2
-	fmt.Printf("%d\n", num-sm*count)
+	ids := make([][]int, 12)
+	for i := 0; i < 12; i++ {
+		ids[i] = make([]int, 12)
+	}
+	y := 0
+	x := 0
+	for {
+		cur := start
+		for cur != nil {
+			ids[y][x] = cur.id
+			fmt.Printf("%v ", cur.id)
+			next := cur.sides[dir1]
+			if next == nil {
+				break
+			}
+			cur = next
+			x++
+		}
+		y++
+		x = 0
+		fmt.Println()
 
-	//rx := regexp.MustCompile(`(?s)##`)
+		tmp := start.sides[dir2]
+		if tmp == nil {
+			break
+		}
+		start = tmp
+		if y == 12 {
+			break
+		}
+	}
+
+	tileMap := make(map[int]*tile)
+	for _, t := range tiles {
+		tmp := t
+		tileMap[t.id] = &tmp
+		removeBorder(&t)
+	}
+	return ids, tileMap
 }
 
 func analysis(tiles []tile) {
@@ -258,24 +225,6 @@ func removeBorder(t *tile) {
 	}
 }
 
-func fixed(candidate *tile) bool {
-	for _, side := range candidate.sides {
-		if side != nil {
-			return true
-		}
-	}
-
-	return false
-}
-
-func tileID(tile *tile) string {
-	if tile == nil {
-		return "<nil>"
-	}
-
-	return fmt.Sprintf("%d", tile.id)
-}
-
 func computeProduct(tiles []tile) []tile {
 	var prod int64 = 1
 
@@ -289,14 +238,6 @@ func computeProduct(tiles []tile) []tile {
 			}
 		}
 		if count == 2 {
-			//fmt.Printf("*** %v\n", tile.id)
-			//for i := 0; i <= 3; i++ {
-			//	id := "</>"
-			//	if tile.sides[i] != nil {
-			//		id = fmt.Sprintf("%d", tile.sides[i].id)
-			//	}
-			//	fmt.Printf("%v -> %v\n", i, id)
-			//}
 			prod *= int64(tile.id)
 			cornerTiles = append(cornerTiles, tile)
 		}
@@ -340,10 +281,6 @@ func linkTile(t *tile, candidate *tile, tileSide int) {
 }
 
 func matchTile(t *tile, candidate *tile, orientation int) bool {
-	// Find side for tile
-	// Find side for candidate
-	// Compare sides
-
 	var sideTile []byte
 	var sideCandidate []byte
 
@@ -399,25 +336,6 @@ func (t *tile) flip() {
 	t.sides[2] = tmp
 }
 
-//func (g *Grid) flipVertical() *Grid {
-//	// Format row / col.
-//	var ng Grid
-//	ng.Height = g.Width
-//	ng.Width = g.Height
-//	ng.Data = make([][]byte, g.Height)
-//	for row := 0; row < g.Height; row++ {
-//		ng.Data[row] = make([]byte, g.Width)
-//	}
-//
-//	for row := 0; row < g.Height; row++ {
-//		for col := 0; col < g.Width; col++ {
-//			ng.Data[row][g.Width-col-1] = g.Data[row][col]
-//		}
-//	}
-//
-//	return &ng
-//}
-
 func (t *tile) rotate() {
 	var ng Grid
 	ng.Height = t.grid.Width
@@ -459,19 +377,3 @@ func readTiles() []tile {
 
 	return tiles
 }
-
-// 1171 2473 3079
-// 1489      2311
-// 2971 2729 1951
-
-// 2729 2971
-//      1489
-
-// 1171 2473
-// 1489
-
-// 2311
-// 1951 2729
-
-//      2311
-// 2473 3079
