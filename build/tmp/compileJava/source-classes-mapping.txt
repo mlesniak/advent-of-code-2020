@@ -1,0 +1,5 @@
+com/mlesniak/aoc/Day21.java
+ com.mlesniak.aoc.Day21
+ com.mlesniak.aoc.Food
+com/mlesniak/aoc/Day22.java
+ com.mlesniak.aoc.Day22
