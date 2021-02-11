@@ -158,7 +158,8 @@ class CircleArray {
 
 public class Day23 {
     public static void main(String[] args) {
-        var input = "389125467";
+//        var input = "389125467";
+        var input = "716892543";
         var elements = new CircleArray(input);
         var cur = elements.root();
 
