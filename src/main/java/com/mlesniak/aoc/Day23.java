@@ -22,7 +22,7 @@ class CircleArray {
     private int highestValue;
     private int lowestValue;
 
-    public CircleArray(String input) {
+    public CircleArray(String input, Integer max) {
         highestValue = Integer.MIN_VALUE;
         lowestValue = Integer.MAX_VALUE;
 
@@ -47,26 +47,32 @@ class CircleArray {
             prev.next = node;
             prev = node;
         }
+
+        if (max != null) {
+            for (int i = highestValue+1; i <= max; i++) {
+                var node = new Element();
+                node.value = i;
+                prev.next = node;
+                prev = node;
+            }
+        }
+
         prev.next = root;
     }
 
-    private void updateEdgeValues(Element root) {
-        highestValue = Integer.MIN_VALUE;
-        lowestValue = Integer.MAX_VALUE;
+    public int getHighestValue() {
+        return highestValue;
+    }
 
-        var current = root;
-        while (current != null) {
-            var val = current.value;
-            if (val > highestValue) {
-                highestValue = val;
-            }
-            if (val < lowestValue) {
-                lowestValue = val;
-            }
-            current = current.next;
-            if (current == root) {
-                break;
-            }
+    private void updateEdgeValues(Element current, ArrayList<Element> threes) {
+        highestValue = 1_000_000;
+        while (threes.contains(highestValue)) {
+            highestValue--;
+        }
+
+        lowestValue = 1;
+        while (threes.contains(lowestValue)) {
+            highestValue++;
         }
     }
 
@@ -84,6 +90,21 @@ class CircleArray {
         }
 
         return sb.toString();
+    }
+
+    public int result2() {
+        var sb = new StringBuilder();
+        var current = root;
+        while (current.value != 1) {
+            current = current.next;
+        }
+
+        current = current.next;
+        var v1 = current.value;
+        current = current.next;
+        var v2 = current.value;
+
+        return v1 * v2;
     }
 
     public Element root() {
@@ -105,7 +126,7 @@ class CircleArray {
             result.add(cur);
         }
         tmp.next = cur.next;
-        updateEdgeValues(tmp);
+        updateEdgeValues(tmp, result);
 
         return result;
     }
@@ -160,21 +181,22 @@ public class Day23 {
     public static void main(String[] args) {
 //        var input = "389125467";
         var input = "716892543";
-        var elements = new CircleArray(input);
+        var elements = new CircleArray(input, 1_000_000);
         var cur = elements.root();
 
         var moves = 100;
+
         for (int i = 1; i <= moves; i++) {
-            System.out.printf("\n--- move %d ---\n", i);
-            System.out.printf("cups: %s / cur = %s\n", elements, cur);
+            var now = System.currentTimeMillis();
             var threes = elements.takeThree(cur);
-            System.out.printf("pick up: %s\n", threes);
             var destination = elements.findDestinationCup(cur, threes);
-            System.out.printf("destination: %d\n", destination.value);
             elements.insert(destination, threes);
             cur = cur.next;
+            if (i % 10 == 0) {
+                System.out.printf("--- move %d ---: %d\n", i, System.currentTimeMillis() - now);
+            }
         }
 
-        System.out.println(elements.result());
+        System.out.println(elements.result2());
     }
 }
