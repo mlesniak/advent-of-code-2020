@@ -5,6 +5,9 @@ plugins {
 group 'com.mlesniak'
 version '1.0-SNAPSHOT'
 
+targetCompatibility = '11'
+sourceCompatibility = '11'
+
 repositories {
     mavenCentral()
 }

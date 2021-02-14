@@ -1,7 +1,9 @@
 package com.mlesniak.aoc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class Element {
     int value;
@@ -22,9 +24,13 @@ class CircleArray {
     private int highestValue;
     private int lowestValue;
 
+    private Map<Integer, Element> table;
+
     public CircleArray(String input, Integer max) {
         highestValue = Integer.MIN_VALUE;
         lowestValue = Integer.MAX_VALUE;
+
+        table = new HashMap<>();
 
         Element prev = null;
         for (int i = 0; i < input.length(); i++) {
@@ -39,6 +45,7 @@ class CircleArray {
                 root = new Element();
                 root.value = value;
                 prev = root;
+                table.put(root.value, root);
                 continue;
             }
 
@@ -46,6 +53,8 @@ class CircleArray {
             node.value = value;
             prev.next = node;
             prev = node;
+
+            table.put(node.value, node);
         }
 
         if (max != null) {
@@ -54,6 +63,7 @@ class CircleArray {
                 node.value = i;
                 prev.next = node;
                 prev = node;
+                table.put(node.value, node);
             }
         }
 
@@ -66,13 +76,13 @@ class CircleArray {
 
     private void updateEdgeValues(Element current, ArrayList<Element> threes) {
         highestValue = 1_000_000;
-        while (threes.contains(highestValue)) {
+        while (threes.stream().anyMatch(d -> d.value == highestValue)) {
             highestValue--;
         }
 
         lowestValue = 1;
-        while (threes.contains(lowestValue)) {
-            highestValue++;
+        while (threes.stream().anyMatch(d -> d.value == lowestValue)) {
+            lowestValue++;
         }
     }
 
@@ -92,17 +102,18 @@ class CircleArray {
         return sb.toString();
     }
 
-    public int result2() {
+    public long result2() {
         var sb = new StringBuilder();
-        var current = root;
-        while (current.value != 1) {
-            current = current.next;
-        }
+//        var current = root;
+//        while (current.value != 1) {
+//            current = current.next;
+//        }
+        var current = table.get(1);
 
         current = current.next;
-        var v1 = current.value;
+        long v1 = current.value;
         current = current.next;
-        var v2 = current.value;
+        long v2 = current.value;
 
         return v1 * v2;
     }
@@ -147,18 +158,23 @@ class CircleArray {
         }
 
         // Not efficient, but :shrug: ...
-        var tmp = root;
-        while (tmp != null) {
-            if (tmp.value == targetValue) {
-                return tmp;
-            }
-            tmp = tmp.next;
-            if (tmp == root) {
-                break;
-            }
+        // TODO(mlesniak) use map here
+//        var tmp = root;
+//        while (tmp != null) {
+//            if (tmp.value == targetValue) {
+//                return tmp;
+//            }
+//            tmp = tmp.next;
+//            if (tmp == root) {
+//                break;
+//            }
+//        }
+        var element = table.get(targetValue);
+        if (element == null) {
+            System.out.println("break");
         }
-
-        return null;
+        return element;
+//        return null;
     }
 
     public String toString() {
@@ -177,6 +193,10 @@ class CircleArray {
     }
 }
 
+/**
+ * gradle build
+ * java -cp build/libs/aoc-2020-1.0-SNAPSHOT.jar com.mlesniak.aoc.Day23
+ */
 public class Day23 {
     public static void main(String[] args) {
 //        var input = "389125467";
@@ -184,16 +204,20 @@ public class Day23 {
         var elements = new CircleArray(input, 1_000_000);
         var cur = elements.root();
 
-        var moves = 100;
+        var moves = 10_000_000;
 
         for (int i = 1; i <= moves; i++) {
             var now = System.currentTimeMillis();
             var threes = elements.takeThree(cur);
             var destination = elements.findDestinationCup(cur, threes);
+            if (destination == null) {
+                System.out.println("null");
+            }
             elements.insert(destination, threes);
             cur = cur.next;
-            if (i % 10 == 0) {
-                System.out.printf("--- move %d ---: %d\n", i, System.currentTimeMillis() - now);
+            if (i % 1000 == 0) {
+                var percent = ((float) i / moves) * 100.0;
+                System.out.printf("--- move %d / %g ---: %d\n", i, percent, System.currentTimeMillis() - now);
             }
         }
 
