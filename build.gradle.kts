@@ -12,6 +12,12 @@ plugins {
     application
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
 repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
@@ -34,5 +40,5 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = "com.mlesniak.aoc2020.AppKt"
+    mainClassName = "com.mlesniak.aoc2020.MainKt"
 }
