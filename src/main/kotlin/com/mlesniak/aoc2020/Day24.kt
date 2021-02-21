@@ -57,22 +57,22 @@ class Coordinate(val x: Int, val y: Int) {
 
 class Day24 {
     fun main() {
-        var tiles = mutableSetOf<Coordinate>()
+        var tiles = mutableMapOf<Coordinate, Coordinate>()
         val directions = parse()
         prepareInitialCells(directions, tiles)
 
         for (i in 0..100) {
-            val numBlack = tiles.filter { it.color == Color.Black }.size
+            val numBlack = tiles.keys.filter { it.color == Color.Black }.size
             println("Day $i: $numBlack")
             tiles = step(tiles)
         }
     }
 
-    private fun prepareInitialCells(directions: List<Directions>, tiles: MutableSet<Coordinate>) {
+    private fun prepareInitialCells(directions: List<Directions>, tiles: MutableMap<Coordinate, Coordinate>) {
         directions.forEachIndexed() { row, directions ->
             val endTile = run(directions)
-            if (tiles.contains(endTile)) {
-                val t = tiles.find { it == endTile }!!
+            val t = tiles.get(endTile)
+            if (t != null) {
                 if (t.color == Color.White) {
                     t.color = Color.Black
                 } else {
@@ -80,16 +80,16 @@ class Day24 {
                 }
             } else {
                 endTile.color = Color.Black
-                tiles.add(endTile)
+                tiles[endTile] = endTile
             }
         }
     }
 
-    private fun step(tiles: Set<Coordinate>): MutableSet<Coordinate> {
-        val newTiles = mutableSetOf<Coordinate>()
+    private fun step(tiles: MutableMap<Coordinate, Coordinate>): MutableMap<Coordinate, Coordinate> {
+        val newTiles = mutableMapOf<Coordinate, Coordinate>()
 
         // For all existing (blacks and white) tiles.
-        for (tile in tiles) {
+        for (tile in tiles.keys) {
             val neighbors = countBlackNeighbors(tiles, tile)
             val nt = tile.copy()
             when (nt.color) {
@@ -102,13 +102,13 @@ class Day24 {
                         nt.color = Color.Black
                     }
             }
-            newTiles.add(nt)
+            newTiles[nt] = nt
         }
 
         // For all plates which are around any plate.
-        for (cur in tiles) {
+        for (cur in tiles.keys) {
             // Check all surrounding tiles.
-            val surroundingTiles = getNeighbors(tiles, cur)
+            val surroundingTiles = getNeighbors(cur)
             // For each of the neighbors, check if it should be switched.
             for (neighbor in surroundingTiles) {
                 val numNeighbors = countBlackNeighbors(tiles, neighbor)
@@ -117,12 +117,12 @@ class Day24 {
                     Color.Black ->
                         if (numNeighbors == 0 || numNeighbors > 2) {
                             nt.color = Color.White
-                            newTiles.add(nt)
+                            newTiles[nt] = nt
                         }
                     Color.White ->
                         if (numNeighbors == 2) {
                             nt.color = Color.Black
-                            newTiles.add(nt)
+                            newTiles[nt] = nt
                         }
                 }
             }
@@ -153,7 +153,7 @@ class Day24 {
         return cur
     }
 
-    private fun countBlackNeighbors(tiles: Set<Coordinate>, cur: Coordinate): Int {
+    private fun countBlackNeighbors(tiles: MutableMap<Coordinate, Coordinate>, cur: Coordinate): Int {
         var counter = 0
         val ns = listOf(
             Direction.East,
@@ -166,8 +166,8 @@ class Day24 {
 
         for (d in ns) {
             val n = computeCoordinate(cur, d)
-            if (tiles.contains(n)) {
-                val t = tiles.find { it == n }!!
+            val t = tiles.get(n)
+            if (t != null) {
                 if (t.color == Color.Black) {
                     counter++
                 }
@@ -177,7 +177,7 @@ class Day24 {
         return counter
     }
 
-    private fun getNeighbors(tiles: Set<Coordinate>, cur: Coordinate): Set<Coordinate> {
+    private fun getNeighbors(cur: Coordinate): Set<Coordinate> {
         val tiles = mutableSetOf<Coordinate>()
 
         var counter = 0
